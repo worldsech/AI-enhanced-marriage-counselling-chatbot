@@ -269,19 +269,40 @@ export async function getUserStats(userId: string) {
   const totalInsights = sessions.reduce((acc, session) => acc + (session.insights || 0), 0)
 
   // Calculate streak
-  let currentStreak = 0
-  const today = new Date()
-  const sortedSessions = sessions.sort((a, b) => new Date(b.sessionDate).getTime() - new Date(a.sessionDate).getTime())
+  let currentStreak = 0;
+  if (sessions.length > 0) {
+    const sessionDates = new Set<string>();
+    sessions.forEach(session => {
+      // Normalize to YYYY-MM-DD format to count unique days and handle timezones
+      const d = new Date(session.sessionDate);
+      d.setHours(d.getHours() - d.getTimezoneOffset() / 60);
+      sessionDates.add(d.toISOString().split('T')[0]);
+    });
 
-  for (const session of sortedSessions) {
-    const sessionDate = new Date(session.sessionDate)
-    const daysDiff = Math.floor((today.getTime() - sessionDate.getTime()) / (1000 * 60 * 60 * 24))
+    let streak = 0;
+    const checkDate = new Date();
 
-    if (daysDiff <= currentStreak + 1) {
-      currentStreak = daysDiff + 1
+    const toDateString = (date: Date) => date.toISOString().split('T')[0];
+
+    // A streak is valid if it includes today or yesterday.
+    // Start by checking today.
+    if (sessionDates.has(toDateString(checkDate))) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
     } else {
-      break
+      // If no session today, check if the streak ended yesterday.
+      checkDate.setDate(checkDate.getDate() - 1);
+      if (sessionDates.has(toDateString(checkDate))) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
     }
+
+    while (streak > 0 && sessionDates.has(toDateString(checkDate))) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+    currentStreak = streak;
   }
 
   return {

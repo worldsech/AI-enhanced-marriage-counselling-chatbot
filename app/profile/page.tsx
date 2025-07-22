@@ -121,6 +121,43 @@ export default function ProfilePage() {
     }
   }
 
+  const calculateProfileCompletion = (profile: typeof userProfile | null): number => {
+    if (!profile) {
+      return 0
+    }
+
+    // A curated list of important fields for profile completion
+    const fieldsToTrack = [
+      "firstName",
+      "lastName",
+      "dateOfBirth",
+      "occupation",
+      "partnerName",
+      "partnerAge",
+      "relationshipStatus",
+      "relationshipStartDate",
+      "relationshipSatisfaction",
+      "hasChildren",
+      "futureFamilyPlans",
+      "mainChallenges",
+      "relationshipGoals",
+      "communicationStyle",
+    ]
+
+    let completedFields = 0
+    fieldsToTrack.forEach((field) => {
+      const key = field as keyof typeof profile
+      const value = profile[key]
+      if ((Array.isArray(value) && value.length > 0) || (!Array.isArray(value) && value)) {
+        completedFields++
+      }
+    })
+
+    return Math.round((completedFields / fieldsToTrack.length) * 100)
+  }
+
+  const completionPercentage = calculateProfileCompletion(userProfile)
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
@@ -221,7 +258,9 @@ export default function ProfilePage() {
                               <SelectContent>
                                 <SelectItem value="high_school">High School</SelectItem>
                                 <SelectItem value="some_college">Some College</SelectItem>
+                                <SelectItem value="OND">Orinary deplomer Degree</SelectItem>
                                 <SelectItem value="bachelors">Bachelor's Degree</SelectItem>
+                                <SelectItem value="HND">High deplomer Degree</SelectItem>
                                 <SelectItem value="masters">Master's Degree</SelectItem>
                                 <SelectItem value="doctorate">Doctorate</SelectItem>
                                 <SelectItem value="other">Other</SelectItem>
@@ -238,12 +277,14 @@ export default function ProfilePage() {
                                 <SelectValue placeholder="Select range" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="under_25k">Under $25,000</SelectItem>
-                                <SelectItem value="25k_50k">$25,000 - $50,000</SelectItem>
-                                <SelectItem value="50k_75k">$50,000 - $75,000</SelectItem>
-                                <SelectItem value="75k_100k">$75,000 - $100,000</SelectItem>
-                                <SelectItem value="100k_150k">$100,000 - $150,000</SelectItem>
-                                <SelectItem value="over_150k">Over $150,000</SelectItem>
+                                <SelectItem value="under_1m">Under ₦1,000,000</SelectItem>
+                                <SelectItem value="1m_2.5m">₦1,000,000 - ₦2,500,000</SelectItem>
+                                <SelectItem value="2.5m_5m">₦2,500,000 - ₦5,000,000</SelectItem>
+                                <SelectItem value="5m_7.5m">₦5,000,000 - ₦7,500,000</SelectItem>
+                                <SelectItem value="7.5m_10m">₦7,500,000 - ₦10,000,000</SelectItem>
+                                <SelectItem value="10m_15m">₦10,000,000 - ₦15,000,000</SelectItem>
+                                <SelectItem value="15m_20m">₦15,000,000 - ₦20,000,000</SelectItem>
+                                <SelectItem value="over_20m">Over ₦20,000,000</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -298,7 +339,9 @@ export default function ProfilePage() {
                               <SelectContent>
                                 <SelectItem value="high_school">High School</SelectItem>
                                 <SelectItem value="some_college">Some College</SelectItem>
+                                <SelectItem value="OND">Orinary deplomer Degree</SelectItem>
                                 <SelectItem value="bachelors">Bachelor's Degree</SelectItem>
+                                <SelectItem value="HND">High deplomer Degree</SelectItem>
                                 <SelectItem value="masters">Master's Degree</SelectItem>
                                 <SelectItem value="doctorate">Doctorate</SelectItem>
                                 <SelectItem value="other">Other</SelectItem>
@@ -315,12 +358,14 @@ export default function ProfilePage() {
                                 <SelectValue placeholder="Select range" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="under_25k">Under $25,000</SelectItem>
-                                <SelectItem value="25k_50k">$25,000 - $50,000</SelectItem>
-                                <SelectItem value="50k_75k">$50,000 - $75,000</SelectItem>
-                                <SelectItem value="75k_100k">$75,000 - $100,000</SelectItem>
-                                <SelectItem value="100k_150k">$100,000 - $150,000</SelectItem>
-                                <SelectItem value="over_150k">Over $150,000</SelectItem>
+                                <SelectItem value="under_1m">Under ₦1,000,000</SelectItem>
+                                <SelectItem value="1m_2.5m">₦1,000,000 - ₦2,500,000</SelectItem>
+                                <SelectItem value="2.5m_5m">₦2,500,000 - ₦5,000,000</SelectItem>
+                                <SelectItem value="5m_7.5m">₦5,000,000 - ₦7,500,000</SelectItem>
+                                <SelectItem value="7.5m_10m">₦7,500,000 - ₦10,000,000</SelectItem>
+                                <SelectItem value="10m_15m">₦10,000,000 - ₦15,000,000</SelectItem>
+                                <SelectItem value="15m_20m">₦15,000,000 - ₦20,000,000</SelectItem>
+                                <SelectItem value="over_20m">Over ₦20,000,000</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -739,12 +784,12 @@ export default function ProfilePage() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Profile Completeness</span>
-                      <span>45%</span>
+                      <span>{completionPercentage}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-gradient-to-r from-pink-500 to-purple-600 h-2 rounded-full"
-                        style={{ width: "45%" }}
+                        style={{ width: `${completionPercentage}%` }}
                       ></div>
                     </div>
                     <p className="text-xs text-gray-600 mt-2">

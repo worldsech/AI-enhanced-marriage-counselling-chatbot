@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -9,7 +10,6 @@ import { useSessions } from "@/hooks/useSessions"
 import { useAuth } from "@/contexts/AuthContext"
 import {
   Heart,
-  Bell,
   Settings,
   MessageCircle,
   Clock,
@@ -21,11 +21,13 @@ import {
   Target,
   BarChart3,
   Plus,
+  LogOut,
 } from "lucide-react"
 
 export default function DashboardPage() {
-  const { userProfile } = useAuth()
+  const { userProfile, logout } = useAuth()
   const { sessions, loading, stats } = useSessions()
+  const router = useRouter()
 
   if (loading) {
     return (
@@ -38,6 +40,43 @@ export default function DashboardPage() {
     )
   }
 
+  const handleLogout = async () => {
+    if (!logout) return
+    try {
+      await logout()
+      // Redirect to login page after successful logout
+      router.push("/login")
+    } catch (error) {
+      console.error("Failed to log out:", error)
+      // You could add a toast notification here to inform the user of the error
+    }
+  }
+
+  const formatDurationFromSeconds = (totalSeconds: number): string => {
+    if (!totalSeconds || totalSeconds < 1) {
+      return "0 mins"
+    }
+
+    // Round to nearest minute
+    const totalMinutes = Math.round(totalSeconds / 60)
+
+    if (totalMinutes < 1) {
+      return "< 1 min"
+    }
+
+    if (totalMinutes < 60) {
+      return `${totalMinutes} min${totalMinutes !== 1 ? "s" : ""}`
+    }
+
+    const hours = Math.floor(totalMinutes / 60)
+    const minutes = totalMinutes % 60
+
+    const hourString = `${hours} hr${hours !== 1 ? "s" : ""}`
+    const minuteString = minutes > 0 ? ` ${minutes} min${minutes !== 1 ? "s" : ""}` : ""
+
+    return `${hourString}${minuteString}`
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
@@ -47,9 +86,6 @@ export default function DashboardPage() {
           <span className="text-xl font-bold text-pink-500">CoupleConnect</span>
         </Link>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5" />
-          </Button>
           <div className="flex items-center gap-2">
             <Avatar>
               <AvatarFallback>
@@ -64,6 +100,9 @@ export default function DashboardPage() {
               <p className="text-gray-500">{userProfile?.relationshipStatus || "User"}</p>
             </div>
           </div>
+          <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
+            <LogOut className="h-5 w-5 text-gray-600" />
+          </Button>
         </div>
       </header>
 
@@ -95,8 +134,8 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100 text-sm">Total Hours</p>
-                  <p className="text-3xl font-bold">{stats.totalHours}</p>
+                  <p className="text-purple-100 text-sm">Total Time</p>
+                  <p className="text-3xl font-bold">{formatDurationFromSeconds(stats.totalHours)}</p>
                 </div>
                 <Clock className="h-8 w-8 text-purple-200" />
               </div>
@@ -108,7 +147,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-blue-100 text-sm">Current Streak</p>
-                  <p className="text-3xl font-bold">{stats.currentStreak} days</p>
+                  <p className="text-3xl font-bold">{stats.currentStreak} {stats.currentStreak === 1 ? "day" : "days"}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-blue-200" />
               </div>
@@ -178,7 +217,7 @@ export default function DashboardPage() {
                   </div>
                 </Link>
 
-                <div className="flex items-center gap-4 p-4 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors">
+                {/* <div className="flex items-center gap-4 p-4 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors">
                   <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                     <Target className="h-6 w-6 text-green-500" />
                   </div>
@@ -187,7 +226,7 @@ export default function DashboardPage() {
                     <p className="text-sm text-gray-600">Set and track your progress</p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-gray-400" />
-                </div>
+                </div> */}
               </CardContent>
             </Card>
 

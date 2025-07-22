@@ -34,10 +34,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+          {/* <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange> */}
             {children}
             <Toaster />
-          </ThemeProvider>
+          {/* </ThemeProvider> */}
         </AuthProvider>
       </body>
     </html>
