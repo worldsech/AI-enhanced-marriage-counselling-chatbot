@@ -11,6 +11,9 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "CoupleConnect",
   description: "developed by Amadi Emmanuel",
+  icons: {
+    icon: "/favicon.svg",
+  },
   keywords: [
     "CoupleConnect",
     "AI marriage counseling",

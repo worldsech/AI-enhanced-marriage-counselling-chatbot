@@ -183,7 +183,7 @@ export default function HomePage() {
                 </p>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-semibold">Joseph & Ed</p>
+                    <p className="font-semibold">Dani & Ed</p>
                     <p className="text-sm text-gray-600">Using CoupleConnect for 3 months</p>
                   </div>
                   <div className="w-12 h-12 bg-gradient-to-r from-pink-400 to-purple-600 rounded-full flex items-center justify-center">
