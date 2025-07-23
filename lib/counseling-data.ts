@@ -1,5 +1,3 @@
-import fs from "fs"
-import path from "path"
 import type { CounselingScenario } from "@/types/user"
 
 const counselingData = {
@@ -318,21 +316,14 @@ export async function getCounselingScenarios(): Promise<CounselingScenario[]> {
     return scenariosCache
   }
 
+  // This function can now be safely used in both client and server components.
+  // On the server, Next.js's fetch is patched to work.
+  // On the client, it's the standard browser fetch.
   try {
-    // In server components/API routes
-    if (typeof window === "undefined") {
-      const filePath = path.join(process.cwd(), "public/data/counseling-dataset.json")
-      const fileData = fs.readFileSync(filePath, "utf8")
-      const data = JSON.parse(fileData)
-      scenariosCache = data.scenarios
-      return data.scenarios
-    } else {
-      // In client components
-      const response = await fetch("/data/counseling-dataset.json")
-      const data = await response.json()
-      scenariosCache = data.scenarios
-      return data.scenarios
-    }
+    const response = await fetch("/data/counseling-dataset.json")
+    const data = await response.json()
+    scenariosCache = data.scenarios
+    return data.scenarios
   } catch (error) {
     console.error("Error loading counseling scenarios:", error)
     return []

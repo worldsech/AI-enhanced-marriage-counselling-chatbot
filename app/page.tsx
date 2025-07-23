@@ -7,7 +7,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Demo Notice */}
-      <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
+     {/* <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
         <div className="container mx-auto">
           <div className="flex">
             <div className="flex-shrink-0">
@@ -27,7 +27,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </div>
+      </div>*/}
       {/* Header */}
       <header className="px-4 lg:px-6 h-16 flex items-center border-b bg-white/80 backdrop-blur-sm">
         <Link className="flex items-center justify-center" href="/">
@@ -60,7 +60,7 @@ export default function HomePage() {
                   <br />
                   Your Relationship
                   <br />
-                  Together
+                  Today
                 </h1>
                 <p className="max-w-[600px] text-gray-600 md:text-xl">
                   AI-Enhanced marriage counseling chatbot that adapts to your unique relationship. Get personalized
@@ -72,7 +72,7 @@ export default function HomePage() {
                   size="lg"
                   className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
                 >
-                  Start Your Journey
+                  <Link href="/signup">Start your journey</Link>
                 </Button>
                 <Button variant="outline" size="lg" className="border-pink-200 hover:bg-pink-50 bg-transparent">
                   <Play className="mr-2 h-4 w-4" />
@@ -183,7 +183,7 @@ export default function HomePage() {
                 </p>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-semibold">Joseph & Joy</p>
+                    <p className="font-semibold">Joseph & Ed</p>
                     <p className="text-sm text-gray-600">Using CoupleConnect for 3 months</p>
                   </div>
                   <div className="w-12 h-12 bg-gradient-to-r from-pink-400 to-purple-600 rounded-full flex items-center justify-center">
@@ -205,7 +205,7 @@ export default function HomePage() {
                 </p>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-semibold">Lisa & James</p>
+                    <p className="font-semibold">Joy & Uche</p>
                     <p className="text-sm text-gray-600">Using CoupleConnect for 6 months</p>
                   </div>
                   <div className="w-12 h-12 bg-gradient-to-r from-pink-400 to-purple-600 rounded-full flex items-center justify-center">
@@ -232,6 +232,7 @@ export default function HomePage() {
             <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center">
               <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100">
                 Start Free Trial
+                <Link href="/signup">Start Free Trial</Link>
               </Button>
               <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10 bg-transparent">
                 Schedule Demo
@@ -316,7 +317,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2025 CoupleConnect. All rights reserved.</p>
+            <p>&copy; 2025 CoupleConnect. All rights reserved. Developed by Amadi Emmanuel</p>
           </div>
         </div>
       </footer>
