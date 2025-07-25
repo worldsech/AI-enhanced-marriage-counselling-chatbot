@@ -289,7 +289,7 @@ What would you like to talk about today?`,
           </div>
         )}
 
-        <Card className="h-[calc(100vh-200px)] flex flex-col border-0 shadow-lg">
+        <Card className=" flex flex-col border-0 shadow-lg">
           <CardHeader className="border-b">
             <CardTitle className="flex items-center gap-2">
               <Avatar>

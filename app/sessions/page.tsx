@@ -131,9 +131,9 @@ export default function SessionsPage() {
                     <Link href={`/counselor?session=${session.id}`} className="flex-1">
                       <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-600">Continue Session</Button>
                     </Link>
-                    <Button variant="outline" size="sm" className="bg-transparent">
+                    {/* <Button variant="outline" size="sm" className="bg-transparent">
                       View Details
-                    </Button>
+                    </Button> */}
                   </div>
                 </CardContent>
               </Card>

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -27,6 +28,23 @@ import {
 export default function DashboardPage() {
   const { userProfile, logout } = useAuth()
   const { sessions, loading, stats } = useSessions()
+  const [welcomeMessage, setWelcomeMessage] = useState("")
+
+  useEffect(() => {
+    // This effect will re-run whenever userProfile changes.
+    if (userProfile) {
+      if (typeof window !== "undefined") {
+        const hasLoggedInBefore = localStorage.getItem("hasLoggedIn")
+        if (!hasLoggedInBefore) {
+          localStorage.setItem("hasLoggedIn", "true")
+          setWelcomeMessage(`Welcome, ${userProfile.firstName || "there"}! 👋`)
+        } else {
+          setWelcomeMessage(`Welcome back, ${userProfile.firstName || "there"}! 👋`)
+        }
+      }
+    }
+  }, [userProfile]) // Dependency array ensures this runs when userProfile is populated
+
   const router = useRouter()
 
   if (loading) {
@@ -108,7 +126,7 @@ export default function DashboardPage() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
+        {/*  <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome back, {userProfile?.firstName || "there"}! 👋</h1>
           <p className="text-gray-600">
             Ready to continue strengthening your relationship
@@ -116,7 +134,14 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Stats Cards */}
+    </div>*/}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">{welcomeMessage}</h1>
+          <p className="text-gray-600">
+            Ready to continue strengthening your relationship
+            {userProfile?.partnerName ? ` with ${userProfile.partnerName}` : ""}?
+          </p>
+        </div>{/* Stats Cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card className="bg-gradient-to-r from-pink-500 to-pink-600 text-white border-0">
             <CardContent className="p-6">
