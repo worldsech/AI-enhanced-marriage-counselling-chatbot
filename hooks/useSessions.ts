@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
-import { getUserSessions, createSession, updateSession, getSession, getUserStats } from "@/lib/database"
+import { getUserSessions, createSession, updateSession, getSession, getUserStats, deleteSession } from "@/lib/database"
 import type { CounselingSession } from "@/types/user"
 
 export function useSessions() {
@@ -62,6 +62,16 @@ export function useSessions() {
     }
   }
 
+  const deleteSessionData = async (sessionId: string) => {
+    try {
+      await deleteSession(sessionId)
+      await loadSessions() // Refresh sessions and stats
+    } catch (error) {
+      console.error("Error deleting session:", error)
+      throw error // Re-throw the error so the UI can catch it
+    }
+  }
+
   const getSessionById = async (sessionId: string) => {
     try {
       return await getSession(sessionId)
@@ -78,6 +88,7 @@ export function useSessions() {
     addSession,
     updateSession: updateSessionData,
     getSession: getSessionById,
+    deleteSession: deleteSessionData,
     refreshSessions: loadSessions,
   }
 }

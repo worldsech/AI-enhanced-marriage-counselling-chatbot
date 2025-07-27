@@ -7,16 +7,28 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useSessions } from "@/hooks/useSessions"
 import { useAuth } from "@/contexts/AuthContext"
-import { Heart, ArrowLeft, MessageCircle, Clock, Calendar, Plus, Search, Filter } from "lucide-react"
+import { Heart, ArrowLeft, MessageCircle, Clock, Calendar, Plus, Search, Filter, Trash2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
 
 export default function SessionsPage() {
   const { userProfile } = useAuth()
-  const { sessions, loading } = useSessions()
+  const { sessions, loading, deleteSession } = useSessions()
   const [searchTerm, setSearchTerm] = useState("")
 
   const filteredSessions = sessions.filter((session) => session.title.toLowerCase().includes(searchTerm.toLowerCase()))
+
+  const handleDelete = async (sessionId: string) => {
+    if (window.confirm("Are you sure you want to delete this session? This action cannot be undone.")) {
+      try {
+        await deleteSession(sessionId)
+        // You could show a success notification here
+      } catch (error) {
+        console.error("Error deleting session:", error)
+        // You could show an error notification here
+      }
+    }
+  }
 
   if (loading) {
     return (
@@ -93,17 +105,27 @@ export default function SessionsPage() {
                         </div>
                       </div>
                     </div>
-                    <Badge
-                      variant={
-                        session.mood === "positive"
-                          ? "default"
-                          : session.mood === "negative"
-                            ? "destructive"
-                            : "secondary"
-                      }
-                    >
-                      {session.mood || "neutral"}
-                    </Badge>
+                    <div className="flex items-center gap-1">
+                      <Badge
+                        variant={
+                          session.mood === "positive"
+                            ? "default"
+                            : session.mood === "negative"
+                              ? "destructive"
+                              : "secondary"
+                        }
+                      >
+                        {session.mood || "neutral"}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full"
+                        onClick={() => handleDelete(session.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">

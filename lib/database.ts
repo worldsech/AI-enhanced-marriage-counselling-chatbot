@@ -11,6 +11,7 @@ import {
   where,
   limit,
   serverTimestamp,
+  deleteDoc,
 } from "firebase/firestore"
 import type { UserProfile, CounselingSession } from "@/types/user"
 
@@ -195,6 +196,40 @@ export async function updateSession(sessionId: string, updates: Partial<Counseli
   } catch (error) {
     console.error("Error updating session in Firestore:", error)
     throw new Error("Failed to update session in database")
+  }
+}
+
+export async function deleteSession(sessionId: string): Promise<void> {
+  console.log("Deleting session:", sessionId)
+
+  if (!sessionId) {
+    throw new Error("Session ID is required to delete a session.")
+  }
+
+  if (!hasFirebaseConfig || !db) {
+    // Handle localStorage for demo mode
+    try {
+      const stored = localStorage.getItem("coupleconnect_sessions")
+      if (stored) {
+        const sessions: CounselingSession[] = JSON.parse(stored)
+        const updatedSessions = sessions.filter((s) => s.id !== sessionId)
+        localStorage.setItem("coupleconnect_sessions", JSON.stringify(updatedSessions))
+        console.log("Session deleted from localStorage")
+      }
+    } catch (error) {
+      console.error("Error deleting from localStorage:", error)
+      throw new Error("Failed to delete session locally")
+    }
+    return
+  }
+
+  try {
+    const sessionRef = doc(db, "sessions", sessionId)
+    await deleteDoc(sessionRef)
+    console.log("Session deleted from Firestore")
+  } catch (error) {
+    console.error("Error deleting session from Firestore:", error)
+    throw new Error("Failed to delete session from database")
   }
 }
 

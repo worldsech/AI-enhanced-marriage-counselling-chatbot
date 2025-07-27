@@ -1,19 +1,19 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 import { useState, useRef, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/contexts/AuthContext"
 import { useSessions } from "@/hooks/useSessions"
 import { useDataSync } from "@/hooks/useDataSync"
-import type { CounselingMessage } from "@/types/user"
-import { Heart, Send, ArrowLeft, Wifi, WifiOff, FolderSyncIcon as Sync } from "lucide-react"
+import { CounselingMessage } from "@/types/user"
+import { Heart, Send, ArrowLeft, Wifi, WifiOff, FolderSyncIcon as Sync, Clock } from "lucide-react"
 import Link from "next/link"
 
 export default function CounselorPage() {
@@ -24,6 +24,7 @@ export default function CounselorPage() {
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [currentSessionId, setCurrentSessionId] = useState<string>("")
+  const [displayDuration, setDisplayDuration] = useState("00:00")
   const [sessionStartTime, setSessionStartTime] = useState<Date>(new Date())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -60,6 +61,33 @@ What would you like to talk about today?`,
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
+
+  useEffect(() => {
+    const formatLiveDuration = (totalSeconds: number): string => {
+      if (isNaN(totalSeconds) || totalSeconds < 0) return "00:00"
+
+      const hours = Math.floor(totalSeconds / 3600)
+      const minutes = Math.floor((totalSeconds % 3600) / 60)
+      const seconds = totalSeconds % 60
+
+      const paddedMinutes = String(minutes).padStart(2, "0")
+      const paddedSeconds = String(seconds).padStart(2, "0")
+
+      if (hours > 0) {
+        const paddedHours = String(hours).padStart(2, "0")
+        return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`
+      }
+
+      return `${paddedMinutes}:${paddedSeconds}`
+    }
+
+    const timer = setInterval(() => {
+      const seconds = Math.floor((new Date().getTime() - sessionStartTime.getTime()) / 1000)
+      setDisplayDuration(formatLiveDuration(seconds))
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [sessionStartTime])
 
   const loadExistingSession = async (sessionId: string) => {
     try {
@@ -289,24 +317,31 @@ What would you like to talk about today?`,
           </div>
         )}
 
-        <Card className=" flex flex-col border-0 shadow-lg">
+        <Card className="flex-1 flex flex-col border-0 shadow-lg overflow-hidden">
           <CardHeader className="border-b">
-            <CardTitle className="flex items-center gap-2">
-              <Avatar>
-                <AvatarFallback className="bg-gradient-to-r from-pink-500 to-purple-600 text-white">AI</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-semibold">AI Relationship Counselor</p>
-                <p className="text-sm text-gray-600 font-normal">
-                  Always here to help strengthen your relationship
-                  {!isOnline && " (Offline Mode)"}
-                </p>
+            <CardTitle className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Avatar>
+                  <AvatarFallback className="bg-gradient-to-r from-pink-500 to-purple-600 text-white">AI</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-semibold">AI Relationship Counselor</p>
+                  <p className="text-sm text-gray-600 font-normal">
+                    Always here to help strengthen your relationship
+                    {!isOnline && " (Offline Mode)"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Clock className="h-4 w-4" />
+                <span>{displayDuration}</span>
               </div>
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="flex-1 flex flex-col p-0">
-            <ScrollArea className="flex-1 p-4">
+          <CardContent className="flex-1 flex flex-col p-0 relative">
+            <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
+            <ScrollArea className="flex-1 p-4 scroll-pt-4">
               <div className="space-y-4">
                 {messages.map((message) => (
                   <div
@@ -365,9 +400,10 @@ What would you like to talk about today?`,
                 )}
                 <div ref={messagesEndRef} />
               </div>
+              <ScrollBar orientation="vertical" />
             </ScrollArea>
 
-            <div className="border-t p-4">
+            <div className="border-t p-4 bg-white relative">
               <div className="flex gap-2">
                 <Input
                   value={input}
