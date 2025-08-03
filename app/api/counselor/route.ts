@@ -58,6 +58,42 @@ function analyzeUserMessage(message: string, userProfile: any) {
   }
 }
 
+/**
+ * Calls the Python prediction service to get a divorce probability score.
+ * @param userProfile The user's profile, which must contain the predictive features.
+ * @returns A probability score, or null if prediction is not possible.
+ */
+async function getDivorceProbability(userProfile: any): Promise<number | null> {
+  // --- IMPORTANT ---
+  // This function assumes you have collected the 32 features required by your model
+  // and stored them in an object, for example, `userProfile.predictiveFeatures`.
+  // You will need to build a form/questionnaire in your UI to gather this data.
+  const modelInputs = userProfile?.predictiveFeatures
+
+  if (!modelInputs) {
+    console.log("Predictive features not available for user. Skipping prediction.")
+    return null
+  }
+
+  try {
+    // Use an environment variable for the prediction service URL for production flexibility.
+    const predictionServiceUrl = process.env.PREDICTION_SERVICE_URL || "http://127.0.0.1:5001/predict"
+
+    // This fetch call goes to your running Python service.
+    const response = await fetch(predictionServiceUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(modelInputs),
+    })
+    if (!response.ok) throw new Error(`Prediction service responded with status: ${response.status}`)
+    const data = await response.json()
+    return data.divorce_probability
+  } catch (error) {
+    console.error("Error calling prediction service:", error)
+    return null
+  }
+}
+
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
 
@@ -74,6 +110,10 @@ export async function POST(request: NextRequest) {
     // Analyze user message
     const analysisData = analyzeUserMessage(message, userProfile)
     console.log("Message analysis completed:", analysisData)
+
+    // ** NEW: Get the predictive model score **
+    const divorceProbability = await getDivorceProbability(userProfile)
+    console.log(`Received divorce probability score: ${divorceProbability}`)
 
     // Find relevant counseling scenarios using RAG
     const relevantScenarios = await findRelevantScenarios(message, 3)
@@ -111,6 +151,7 @@ Current Analysis:
 - Key Topics: ${analysisData.keyTopics.join(", ")}
 - Concern Level: ${analysisData.concernLevel}
 - Emotional State: ${analysisData.emotionalState.join(", ")}
+${divorceProbability !== null ? `- Predicted Divorce Risk Score: ${divorceProbability.toFixed(2)}. A higher score indicates a higher probability of divorce based on the provided factors. Use this score to inform the level of concern and directness in your counseling.` : ""}
 
 Relevant Scenarios: ${relevantScenarios.map((s) => s.situation).join("; ")}
 
@@ -126,6 +167,11 @@ Please provide a personalized, empathetic response that addresses their specific
         })
 
         aiResponse = result.text
+        // Add a check for an empty response from the AI
+        if (!aiResponse.trim()) {
+          throw new Error("Gemini API returned an empty response.")
+        }
+
         responseMetadata = {
           model: "gemini-2.0-flash-exp",
           source: "gemini-ai",
@@ -186,7 +232,7 @@ What specific aspect of this situation would you like to explore further? I'm he
         const analysisId = await saveUserAnalysis({
           userId: userProfile.uid,
           sessionId,
-          analysisType: (analysisData.keyTopics[0] as any) || "general",
+                    analysisType: analysisData.keyTopics[0] || "general",
           analysisData,
         })
 
@@ -216,6 +262,7 @@ What specific aspect of this situation would you like to explore further? I'm he
       category: relevantScenarios[0]?.category || "general",
       source: responseMetadata.source,
       analysis: analysisData,
+      predictionScore: divorceProbability,
       processingTime: responseMetadata.processingTime,
     })
   } catch (error) {

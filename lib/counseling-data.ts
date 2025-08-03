@@ -306,33 +306,15 @@ const counselingData = {
   },
 }
 
-// Cache for the counseling scenarios
-let scenariosCache: CounselingScenario[] | null = null
-
 // Function to get all counseling scenarios
-export async function getCounselingScenarios(): Promise<CounselingScenario[]> {
-  // Return from cache if available
-  if (scenariosCache) {
-    return scenariosCache
-  }
-
-  // This function can now be safely used in both client and server components.
-  // On the server, Next.js's fetch is patched to work.
-  // On the client, it's the standard browser fetch.
-  try {
-    const response = await fetch("/data/counseling-dataset.json")
-    const data = await response.json()
-    scenariosCache = data.scenarios
-    return data.scenarios
-  } catch (error) {
-    console.error("Error loading counseling scenarios:", error)
-    return []
-  }
+export function getCounselingScenarios(): CounselingScenario[] {
+  // Directly return the scenarios from the hardcoded data.
+  return counselingData.scenarios
 }
 
 // Function to find relevant scenarios based on user message
-export async function findRelevantScenarios(userMessage: string, limit = 3): Promise<CounselingScenario[]> {
-  const scenarios = await getCounselingScenarios()
+export function findRelevantScenarios(userMessage: string, limit = 3): CounselingScenario[] {
+  const scenarios = getCounselingScenarios()
   const messageLower = userMessage.toLowerCase()
 
   const scoredScenarios = scenarios.map((scenario) => {
@@ -360,29 +342,4 @@ export async function findRelevantScenarios(userMessage: string, limit = 3): Pro
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map((item) => item.scenario)
-}
-
-// Function to add a new scenario
-export async function addScenario(scenario: CounselingScenario): Promise<boolean> {
-  try {
-    // This is a demo implementation that works in the browser
-    // In a real app, this would call an API endpoint to update the database
-
-    // Get current scenarios
-    const scenarios = await getCounselingScenarios()
-
-    // Add new scenario
-    scenarios.push(scenario)
-
-    // Update cache
-    scenariosCache = scenarios
-
-    // In a real app, we would save to database here
-    console.log("Added new scenario:", scenario.id)
-
-    return true
-  } catch (error) {
-    console.error("Error adding scenario:", error)
-    return false
-  }
 }

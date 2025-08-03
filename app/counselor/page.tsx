@@ -95,7 +95,9 @@ What would you like to talk about today?`,
       if (session) {
         setCurrentSessionId(sessionId)
         setMessages(session.messages)
-        setSessionStartTime(session.sessionDate)
+        // Ensure sessionDate is a valid Date object
+        const sessionDate = new Date(session.sessionDate);
+        setSessionStartTime(isNaN(sessionDate.getTime()) ? new Date() : sessionDate);
       } else {
         setCurrentSessionId("")
         createNewSession()

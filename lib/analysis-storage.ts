@@ -27,6 +27,10 @@ const getDeviceId = (): string => {
 
 // Get device info
 const getDeviceInfo = () => {
+  if (typeof navigator === "undefined") {
+    // Return a default object for server-side execution
+    return { userAgent: "server", platform: "server", deviceType: "desktop" as const }
+  }
   const userAgent = navigator.userAgent
   const platform = navigator.platform
 
@@ -92,7 +96,7 @@ export async function saveUserAnalysis(
     return docRef.id
   } catch (error) {
     console.error("Error saving analysis to Firestore:", error)
-    throw new Error("Failed to save analysis to database")
+    throw new Error(`Failed to save analysis to database: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
@@ -188,7 +192,7 @@ export async function saveAIResponse(response: Omit<AIResponse, "id" | "createdA
     return docRef.id
   } catch (error) {
     console.error("Error saving AI response to Firestore:", error)
-    throw new Error("Failed to save AI response to database")
+    throw new Error(`Failed to save AI response to database: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
