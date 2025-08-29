@@ -1,5 +1,11 @@
 import type { CounselingScenario } from "@/types/user"
 
+// --- SUGGESTION: Advanced RAG with Vector Embeddings ---
+// To significantly improve the relevance of scenarios, you would use a vector-based search.
+// This involves generating a numeric "embedding" for the user's message and comparing it
+// to pre-computed embeddings for each scenario. This captures semantic meaning, not just keywords.
+// The following is a conceptual refactor. You would need an embedding model/service.
+
 const counselingData = {
   metadata: {
     version: "1.0",
@@ -312,34 +318,54 @@ export function getCounselingScenarios(): CounselingScenario[] {
   return counselingData.scenarios
 }
 
-// Function to find relevant scenarios based on user message
-export function findRelevantScenarios(userMessage: string, limit = 3): CounselingScenario[] {
+/**
+ * Placeholder for a function that would call an embedding model.
+ * In a real implementation, this might call a service like OpenAI, Cohere,
+ * or a self-hosted sentence-transformer model.
+ * @param text The text to embed.
+ * @returns A numeric vector representing the text.
+ */
+async function getEmbedding(text: string): Promise<number[]> {
+  // In a real app, this would be an API call.
+  // For this example, we'll simulate it with a simple placeholder.
+  console.log(`Simulating embedding generation for: "${text.substring(0, 30)}..."`)
+  // A real embedding would have many more dimensions (e.g., 384, 768, or 1536).
+  const vector = Array.from({ length: 10 }, () => Math.random())
+  return vector
+}
+
+/**
+ * Calculates the cosine similarity between two vectors.
+ * @returns A score between -1 and 1, where 1 means identical.
+ */
+function cosineSimilarity(vecA: number[], vecB: number[]): number {
+  const dotProduct = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0)
+  const magnitudeA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0))
+  const magnitudeB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0))
+  if (magnitudeA === 0 || magnitudeB === 0) return 0
+  return dotProduct / (magnitudeA * magnitudeB)
+}
+
+// --- REFACTORED: Find relevant scenarios using vector similarity ---
+export async function findRelevantScenarios(userMessage: string, limit = 3): Promise<CounselingScenario[]> {
   const scenarios = getCounselingScenarios()
-  const messageLower = userMessage.toLowerCase()
+  const userMessageEmbedding = await getEmbedding(userMessage)
 
-  const scoredScenarios = scenarios.map((scenario) => {
-    let score = 0
-
-    // Check keywords
-    scenario.keywords.forEach((keyword) => {
-      if (messageLower.includes(keyword.toLowerCase())) {
-        score += 2
-      }
-    })
-
-    // Check situation description
-    const situationWords = scenario.situation.toLowerCase().split(" ")
-    situationWords.forEach((word) => {
-      if (messageLower.includes(word) && word.length > 3) {
-        score += 1
-      }
-    })
-
-    return { scenario, score }
-  })
+  // In a production system, scenario embeddings would be pre-computed and stored.
+  // Here, we generate them on the fly for demonstration.
+  const scoredScenarios = await Promise.all(
+    scenarios.map(async (scenario) => {
+      // Combine situation and keywords for a richer embedding context.
+      const scenarioText = `${scenario.situation} ${scenario.keywords.join(" ")}`
+      const scenarioEmbedding = await getEmbedding(scenarioText)
+      const score = cosineSimilarity(userMessageEmbedding, scenarioEmbedding)
+      return { scenario, score }
+    }),
+  )
 
   return scoredScenarios
     .sort((a, b) => b.score - a.score)
+    .filter((item) => item.score > 0.5) // Optional: set a relevance threshold
     .slice(0, limit)
     .map((item) => item.scenario)
 }

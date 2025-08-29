@@ -195,7 +195,9 @@ export default function ProfilePage() {
                       </Button>
                     </DialogTitle>
                     <p className="text-sm text-gray-600">
-                      Help us understand your family dynamics for personalized counseling guidance
+                      Providing detailed information helps our AI understand your unique situation. This data also
+                      powers a predictive model to estimate relationship challenges, allowing the AI to tailor its
+                      guidance more effectively.
                     </p>
                   </DialogHeader>
 

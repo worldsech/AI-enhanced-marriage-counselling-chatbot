@@ -4,21 +4,26 @@ import { google } from "@ai-sdk/google"
 import { findRelevantScenarios } from "@/lib/counseling-data"
 import { systemPrompt } from "@/lib/system-prompt"
 import { saveUserAnalysis, saveAIResponse } from "@/lib/analysis-storage"
+import Sentiment from "sentiment"
 
 // Analyze user message for insights
 function analyzeUserMessage(message: string, userProfile: any) {
   const messageLower = message.toLowerCase()
 
-  // Sentiment analysis (basic)
-  const positiveWords = ["happy", "good", "better", "love", "great", "wonderful", "amazing", "grateful"]
-  const negativeWords = ["sad", "angry", "frustrated", "hurt", "terrible", "awful", "hate", "upset"]
-
-  const positiveCount = positiveWords.filter((word) => messageLower.includes(word)).length
-  const negativeCount = negativeWords.filter((word) => messageLower.includes(word)).length
+  // ** NEW: Advanced Sentiment Analysis using 'sentiment' library **
+  // This provides a more nuanced analysis than simple keyword matching.
+  // It understands negation (e.g., "not happy") and word valence.
+  const sentimentAnalyzer = new Sentiment()
+  const result = sentimentAnalyzer.analyze(message)
 
   let sentiment: "positive" | "neutral" | "negative" = "neutral"
-  if (positiveCount > negativeCount) sentiment = "positive"
-  else if (negativeCount > positiveCount) sentiment = "negative"
+  // The 'comparative' score is normalized by word count, making it better for varying text lengths.
+  // It typically ranges from -5 to 5. We set thresholds to categorize the sentiment.
+  if (result.comparative > 0.25) {
+    sentiment = "positive"
+  } else if (result.comparative < -0.25) {
+    sentiment = "negative"
+  }
 
   // Extract key topics
   const topicKeywords = {
@@ -60,8 +65,11 @@ function analyzeUserMessage(message: string, userProfile: any) {
 
 /**
  * Calls the Python prediction service to get a divorce probability score.
+ * This service hosts a **Random Forest Regressor**, a powerful machine learning model
+ * trained on a divorce prediction dataset. As an ensemble model, it builds multiple
+ * decision trees to analyze relationship attributes and predict the likelihood of divorce.
  * @param userProfile The user's profile, which must contain the predictive features.
- * @returns A probability score, or null if prediction is not possible.
+ * @returns A probability score (e.g., 0.75 for 75% probability), or null if prediction is not possible.
  */
 async function getDivorceProbability(userProfile: any): Promise<number | null> {
   // --- IMPORTANT ---
@@ -116,7 +124,7 @@ export async function POST(request: NextRequest) {
     console.log(`Received divorce probability score: ${divorceProbability}`)
 
     // Find relevant counseling scenarios using RAG
-    const relevantScenarios = await findRelevantScenarios(message, 3)
+    const relevantScenarios = await findRelevantScenarios(message, 3) // Now an async function
     console.log("Found relevant scenarios:", relevantScenarios.length)
 
     // Check if we have Gemini API key
